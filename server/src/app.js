@@ -12,8 +12,15 @@ app.use(helmet());
 // CORS configuration - Allow all for development, restrict for production
 app.use(cors());
 
-// Parsing JSON body
+// Parsing JSON & URL-encoded bodies
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Fallback to prevent "Cannot destructure property of undefined" if Content-Type is missing
+app.use((req, res, next) => {
+    if (!req.body) req.body = {};
+    next();
+});
 
 // Request logging middleware
 if (process.env.NODE_ENV === 'development') {
