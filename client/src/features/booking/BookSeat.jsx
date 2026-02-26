@@ -5,7 +5,7 @@ import api from '../../services/api';
 import { format, addDays, isSameDay, startOfToday } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { CheckCircle, Info, Calendar as CalendarIcon, Clock, ShieldAlert, Users, Layers, AlertTriangle, ChevronRight } from 'lucide-react';
+import { CheckCircle, Info, Calendar as CalendarIcon, Clock, ShieldAlert, Users, Layers, AlertTriangle, ChevronRight, Server } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 export default function BookSeat() {
