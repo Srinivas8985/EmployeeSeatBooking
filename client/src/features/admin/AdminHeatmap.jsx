@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
-import { format, parseISO, subDays, startOfToday } from 'date-fns';
+import { format, parseISO, subDays, addDays, startOfToday } from 'date-fns';
 import { cn } from '../../utils/cn';
 import { Calendar as CalendarIcon, Info, ShieldAlert } from 'lucide-react';
 import { useToast } from '../../components/ui/Toast';
