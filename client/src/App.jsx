@@ -19,6 +19,7 @@ import RulesHelp from './features/booking/RulesHelp';
 // Pages - Admin
 import AdminOverview from './features/admin/AdminOverview';
 import Heatmap from './features/admin/AdminHeatmap';
+import EmployeeManagement from './features/admin/EmployeeManagement';
 
 // Placeholder Pages
 const Placeholder = ({ title }) => (
@@ -59,7 +60,7 @@ function App() {
               <Route element={<DashboardLayout />}>
                 <Route path="/admin" element={<AdminOverview />} />
                 <Route path="/admin/heatmap" element={<Heatmap />} />
-                <Route path="/admin/employees" element={<Placeholder title="Employee Management" />} />
+                <Route path="/admin/employees" element={<EmployeeManagement />} />
                 <Route path="/admin/settings" element={<Placeholder title="Admin Settings" />} />
               </Route>
             </Route>
