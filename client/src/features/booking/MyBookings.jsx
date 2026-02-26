@@ -91,8 +91,8 @@ export default function MyBookings() {
         );
     }
 
-    const upcomingBookings = bookings.filter(b => b.status !== 'CANCELLED' && (isFuture(new Date(b.booking_date)) || isToday(new Date(b.booking_date))));
-    const pastBookings = bookings.filter(b => b.status === 'CANCELLED' || (!isFuture(new Date(b.booking_date)) && !isToday(new Date(b.booking_date))));
+    const upcomingBookings = bookings.filter(b => b.status !== 'CANCELLED' && b.booking_date && (isFuture(new Date(b.booking_date)) || isToday(new Date(b.booking_date))));
+    const pastBookings = bookings.filter(b => b.status === 'CANCELLED' || !b.booking_date || (!isFuture(new Date(b.booking_date)) && !isToday(new Date(b.booking_date))));
 
     return (
         <div className="space-y-8">
@@ -121,10 +121,10 @@ export default function MyBookings() {
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <CardTitle className="text-lg flex items-center text-slate-800 gap-2">
-                                                {format(new Date(booking.booking_date), 'EEEE')}
+                                                {booking.booking_date ? format(new Date(booking.booking_date), 'EEEE') : 'Unknown Date'}
                                             </CardTitle>
                                             <CardDescription className="text-slate-500 font-medium">
-                                                {format(new Date(booking.booking_date), 'MMM d, yyyy')}
+                                                {booking.booking_date ? format(new Date(booking.booking_date), 'MMM d, yyyy') : ''}
                                             </CardDescription>
                                         </div>
                                         {getStatusBadge(booking.status)}
@@ -146,8 +146,7 @@ export default function MyBookings() {
                                         Booking Type: <span className="ml-1 font-medium text-slate-800">{booking.booking_type}</span>
                                     </div>
                                     <div className="flex items-center text-sm text-slate-600">
-                                        <Clock className="w-4 h-4 mr-3 text-slate-400" />
-                                        Booked at: {format(new Date(booking.created_at), 'MMM d, h:mm a')}
+                                        Booked at: {booking.created_at ? format(new Date(booking.created_at), 'MMM d, h:mm a') : 'Unknown'}
                                     </div>
                                 </CardContent>
                                 <div className="p-4 pt-0">
@@ -179,7 +178,7 @@ export default function MyBookings() {
                                             <CalendarDays className="w-5 h-5 text-slate-500" />
                                         </div>
                                         <div>
-                                            <p className="font-medium text-slate-800">{format(new Date(booking.booking_date), 'MMM d, yyyy')}</p>
+                                            <p className="font-medium text-slate-800">{booking.booking_date ? format(new Date(booking.booking_date), 'MMM d, yyyy') : 'Unknown Date'}</p>
                                             <p className="text-xs text-slate-500">
                                                 {booking.seat?.seat_number ? `Seat ${booking.seat.seat_number}` : 'No seat assigned'} • {booking.booking_type}
                                             </p>
