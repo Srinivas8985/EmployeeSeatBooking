@@ -50,7 +50,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 Route Not Found
-app.use('*', (req, res) => {
+app.use((req, res) => {
     res.status(404).json({ success: false, error: 'Route not found' });
 });
 
