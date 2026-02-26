@@ -70,6 +70,45 @@ const getAnalytics = async () => {
     };
 };
 
+const getDailyOccupancy = async () => {
+    const db = require('../config/db');
+    const seatsRes = await db.query('SELECT COUNT(*) FROM seats');
+    const totalSeats = parseInt(seatsRes.rows[0].count, 10);
+
+    const result = await db.query(`
+        WITH DailyStats AS (
+            SELECT 
+                b.booking_date as date, 
+                COUNT(*) as booked
+            FROM bookings b
+            WHERE b.status='BOOKED'
+            GROUP BY b.booking_date
+        ), WaitlistStats AS (
+            SELECT 
+                w.booking_date as date, 
+                COUNT(*) as waitlist_count
+            FROM waitlist w
+            GROUP BY w.booking_date
+        )
+        SELECT 
+            COALESCE(d.date, w.date) as stat_date,
+            COALESCE(d.booked, 0) as booked,
+            COALESCE(w.waitlist_count, 0) as waitlist_count
+        FROM DailyStats d
+        FULL OUTER JOIN WaitlistStats w ON d.date = w.date
+        ORDER BY stat_date DESC
+        LIMIT 30
+    `);
+
+    return result.rows.map(row => ({
+        date: row.stat_date.toISOString().split('T')[0],
+        booked: parseInt(row.booked, 10),
+        waitlist: parseInt(row.waitlist_count, 10),
+        capacity: totalSeats,
+        occupancy_percentage: totalSeats ? ((parseInt(row.booked, 10) / totalSeats) * 100).toFixed(2) : 0
+    }));
+};
+
 const getAllEmployees = async () => {
     return await userRepository.getAllUsers();
 };
@@ -117,5 +156,6 @@ module.exports = {
     getAuditLogs: adminRepository.getAuditLogs,
     getAllEmployees,
     updateEmployee,
-    deleteEmployee
+    deleteEmployee,
+    getDailyOccupancy
 };

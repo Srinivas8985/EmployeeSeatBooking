@@ -10,6 +10,7 @@ const {
     addHoliday,
     getHolidays,
     getAnalytics,
+    getDailyOccupancy,
     getAllBookings,
     getWaitlist,
     getAuditLogs
@@ -30,6 +31,7 @@ router.put('/config', updateConfig);
 router.post('/holidays', addHoliday);
 router.get('/holidays', getHolidays);
 router.get('/analytics', getAnalytics);
+router.get('/analytics/daily-occupancy', getDailyOccupancy);
 router.get('/bookings', getAllBookings);
 router.get('/waitlist', getWaitlist);
 router.get('/audit-logs', getAuditLogs);

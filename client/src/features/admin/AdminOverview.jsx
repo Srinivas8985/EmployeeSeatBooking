@@ -20,6 +20,7 @@ import {
 
 export default function AdminOverview() {
     const [data, setData] = useState(null);
+    const [trendData, setTrendData] = useState([]);
     const [loading, setLoading] = useState(true);
     const { addToast } = useToast();
 
@@ -29,8 +30,23 @@ export default function AdminOverview() {
 
     const fetchAnalytics = async () => {
         try {
-            const response = await api.get('/admin/analytics');
-            setData(response.data.data);
+            const [overviewRes, trendRes] = await Promise.all([
+                api.get('/admin/analytics'),
+                api.get('/admin/analytics/daily-occupancy')
+            ]);
+            setData(overviewRes.data.data);
+
+            // Recharts expects array. We'll take the last 7 days and reverse to chronological
+            const rawTrend = trendRes.data.data || [];
+            const last7Days = rawTrend.slice(0, 7).reverse().map(d => ({
+                name: format(new Date(d.date), 'EEE'), // e.g. "Mon"
+                occupancy: d.booked,
+                waitlist: d.waitlist,
+                percentage: d.occupancy_percentage
+            }));
+
+            setTrendData(last7Days);
+
         } catch (error) {
             addToast({
                 title: 'Error loading analytics',
@@ -66,14 +82,12 @@ export default function AdminOverview() {
         );
     }
 
-    // Generate Mock Data for the Charts based on the actual today's stats 
-    // (In a real app, this would be an array returned from the backend over 7 days)
-    const occupancyData = [
-        { name: 'Mon', occupancy: 45, waitlist: 0 },
-        { name: 'Tue', occupancy: 70, waitlist: 5 },
-        { name: 'Wed', occupancy: 85, waitlist: 12 },
-        { name: 'Thu', occupancy: 60, waitlist: 2 },
-        { name: 'Fri', occupancy: Number(data?.occupancy_percentage || 0), waitlist: Number(data?.waitlist_count || 0) },
+    const occupancyData = trendData.length > 0 ? trendData : [
+        { name: 'Mon', occupancy: 0, waitlist: 0 },
+        { name: 'Tue', occupancy: 0, waitlist: 0 },
+        { name: 'Wed', occupancy: 0, waitlist: 0 },
+        { name: 'Thu', occupancy: 0, waitlist: 0 },
+        { name: 'Fri', occupancy: 0, waitlist: 0 },
     ];
 
     return (

@@ -24,7 +24,6 @@ export default function Login() {
 
     if (result.success) {
       addToast({ title: 'Welcome Back!', description: 'Successfully securely logged in.', variant: 'success' });
-      // Navigation is handled automatically by AuthLayout / ProtectedRoute reactions
     } else {
       addToast({ title: 'Access Denied', description: result.message, variant: 'error' });
     }

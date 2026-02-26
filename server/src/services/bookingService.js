@@ -21,6 +21,96 @@ const diffDays = (date1, date2) => {
 
 // --- Main Service Logic ---
 
+const getAvailability = async (userId, date) => {
+    if (!date) throw new CustomError('Date is required', 400);
+
+    const client = await db.getClient();
+    let result = {};
+    try {
+        const workingDays = await bookingRepo.getUserBatchDays(userId);
+        const targetDay = getDayOfWeek(date);
+        const isWorkingBatch = workingDays.includes(targetDay);
+
+        result.is_working_batch = isWorkingBatch;
+        result.booking_type = isWorkingBatch ? 'DESIGNATED' : 'FLOATER';
+
+        const isHol = await bookingRepo.isHoliday(date);
+        result.is_holiday = isHol;
+        result.is_weekend = isWeekend(date);
+
+        const seatsRes = await client.query('SELECT COUNT(*) FROM seats');
+        result.total_seats = parseInt(seatsRes.rows[0].count, 10);
+
+        const waitlistRes = await client.query('SELECT COUNT(*) FROM waitlist WHERE booking_date = $1', [date]);
+        result.waitlist_count = parseInt(waitlistRes.rows[0].count, 10);
+
+        const designatedBookedRes = await client.query(`SELECT COUNT(*) FROM bookings WHERE booking_date = $1 AND booking_type = 'DESIGNATED' AND status = 'BOOKED'`, [date]);
+        const designatedBooked = parseInt(designatedBookedRes.rows[0].count, 10);
+        const totalDesignatedRes = await client.query(`SELECT COUNT(*) FROM seats WHERE type = 'DESIGNATED'`);
+        const totalDesignated = parseInt(totalDesignatedRes.rows[0].count, 10);
+
+        result.designated_available = Math.max(0, totalDesignated - designatedBooked);
+        result.designated_total = totalDesignated;
+
+        const baseFloaterCount = await bookingRepo.getBaseFloaterCount(client);
+        const bookedFloaterCount = await bookingRepo.getBookedFloaterCount(client, date);
+        const unbookedDesignatedCount = Math.max(0, totalDesignated - designatedBooked);
+
+        const totalLogicalFloaterCapacity = baseFloaterCount + unbookedDesignatedCount;
+        result.floater_available = Math.max(0, totalLogicalFloaterCapacity - bookedFloaterCount);
+        result.floater_total = totalLogicalFloaterCapacity;
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const daysDiff = diffDays(todayStr, date);
+        const currentHour = new Date().getHours();
+
+        if (isHol || result.is_weekend) {
+            result.is_eligible = false;
+            result.eligibility_reason = isHol ? 'Company Holiday' : 'Weekend';
+        } else if (daysDiff < 0) {
+            result.is_eligible = false;
+            result.eligibility_reason = 'Cannot book past dates';
+        } else if (daysDiff > 14) {
+            result.is_eligible = false;
+            result.eligibility_reason = 'Cannot book more than 14 days in advance';
+        } else if (!isWorkingBatch) {
+            if (daysDiff !== 1) {
+                result.is_eligible = false;
+                result.eligibility_reason = 'Floater seats can only be booked exactly 1 day in advance';
+            } else if (currentHour < 15) {
+                result.is_eligible = false;
+                result.eligibility_reason = 'Floater seats can only be booked after 3 PM server time the day before';
+            } else {
+                result.is_eligible = true;
+            }
+        } else {
+            result.is_eligible = true;
+        }
+
+        const existingBooking = await bookingRepo.getUserBookingForDate(userId, date);
+        if (existingBooking) {
+            result.is_eligible = false;
+            result.eligibility_reason = 'Already booked for this date';
+        }
+
+        const waitlistUserRes = await client.query('SELECT id FROM waitlist WHERE user_id = $1 AND booking_date = $2', [userId, date]);
+        if (waitlistUserRes.rows.length > 0) {
+            result.is_eligible = false;
+            result.eligibility_reason = 'Already on waitlist for this date';
+        }
+
+        const batchRes = await client.query(`SELECT b.name FROM users u JOIN batches b ON u.batch_id = b.id WHERE u.id = $1`, [userId]);
+        result.batch_name = batchRes.rows[0]?.name || 'Unassigned Batch';
+
+    } catch (e) {
+        throw e;
+    } finally {
+        client.release();
+    }
+
+    return result;
+};
+
 const bookSeat = async (userId, bookingDate) => {
     // 1. Basic Validations
     if (isWeekend(bookingDate)) {
@@ -209,6 +299,7 @@ const getMyBookings = async (userId) => {
 };
 
 module.exports = {
+    getAvailability,
     bookSeat,
     cancelBooking,
     getMyBookings

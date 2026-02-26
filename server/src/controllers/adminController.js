@@ -85,6 +85,15 @@ const getAnalytics = async (req, res, next) => {
     }
 };
 
+const getDailyOccupancy = async (req, res, next) => {
+    try {
+        const stats = await adminService.getDailyOccupancy();
+        res.status(200).json({ success: true, data: stats });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getAllBookings = async (req, res, next) => {
     try {
         const { date } = req.query;
@@ -124,5 +133,6 @@ module.exports = {
     getAuditLogs,
     getAllEmployees,
     updateEmployee,
-    deleteEmployee
+    deleteEmployee,
+    getDailyOccupancy
 };

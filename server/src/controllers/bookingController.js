@@ -48,8 +48,21 @@ const getMyBookings = async (req, res, next) => {
     }
 };
 
+const getAvailability = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { date } = req.query;
+        const availability = await bookingService.getAvailability(userId, date);
+
+        res.status(200).json({ success: true, data: availability });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     bookSeat,
     cancelBooking,
-    getMyBookings
+    getMyBookings,
+    getAvailability
 };
