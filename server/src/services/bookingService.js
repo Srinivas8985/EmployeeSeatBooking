@@ -209,9 +209,8 @@ const bookSeat = async (userId, bookingDate) => {
         }
     } catch (err) {
         await client.query('ROLLBACK');
-        // If uniqueness constraint triggered by concurrent race
         if (err.code === '23505') {
-            throw new CustomError('Unique constraint violation, you already booked or are on waitlist', 400);
+            throw new CustomError('You are already booked or on the waitlist for this date.', 400);
         }
         throw err;
     } finally {

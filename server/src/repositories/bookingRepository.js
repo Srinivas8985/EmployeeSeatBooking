@@ -32,10 +32,10 @@ const findAvailableSeatAndLock = async (client, seatType, bookingDate) => {
 const getUnbookedDesignatedCount = async (client, bookingDate) => {
     const result = await client.query(
         `SELECT COUNT(*) FROM seats 
-     WHERE type = 'DESIGNATED' 
-     AND id NOT IN (
-       SELECT seat_id FROM bookings WHERE booking_date = $1 AND status = 'BOOKED'
-     )`,
+         WHERE type = 'DESIGNATED' 
+         AND id NOT IN (
+           SELECT seat_id FROM bookings WHERE booking_date = $1 AND status = 'BOOKED'
+         )`,
         [bookingDate]
     );
     return parseInt(result.rows[0].count, 10);
@@ -101,7 +101,7 @@ const removeWaitlistEntry = async (client, waitlistId) => {
     await client.query(`DELETE FROM waitlist WHERE id = $1`, [waitlistId]);
 };
 
-// Returns user's booking for a day
+// Returns user's active booking for a day
 const getUserBookingForDate = async (userId, bookingDate) => {
     const result = await db.query(
         `SELECT * FROM bookings WHERE user_id = $1 AND booking_date = $2 AND status = 'BOOKED'`,

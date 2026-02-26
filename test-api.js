@@ -3,26 +3,10 @@ async function test() {
         const loginRes = await fetch('http://localhost:5000/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: 'admin@company.com',
-                password: 'admin123'
-            })
+            body: JSON.stringify({ email: 'admin@company.com', password: 'admin' }) // check seeding password logic or just hardcode DB insert
         });
 
-        if (!loginRes.ok) {
-            console.log('Login failed:', await loginRes.text());
-            return;
-        }
-
-        const loginData = await loginRes.json();
-        const token = loginData.data.token;
-
-        const res = await fetch('http://localhost:5000/api/admin/analytics/daily-occupancy', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        console.log('Status:', res.status);
-        console.log('Data:', await res.text());
+        // Wait, let's just use pg directly and print the status in the test-db file
     } catch (e) {
         console.error(e.message);
     }
