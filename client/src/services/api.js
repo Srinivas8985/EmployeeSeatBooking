@@ -6,8 +6,6 @@ const api = axios.create({
         'Content-Type': 'application/json',
     },
 });
-
-// Request Interceptor: Attach JWT Token
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
@@ -18,13 +16,10 @@ api.interceptors.request.use(
     },
     (error) => Promise.reject(error)
 );
-
-// Response Interceptor: Handle 401 Unauthorized Globally
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && error.response.status === 401) {
-            // Clear token and redirect to login if unauthorized
+        if (error.response && error.response.status === 401) {       
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.dispatchEvent(new Event('auth-unauthorized'));

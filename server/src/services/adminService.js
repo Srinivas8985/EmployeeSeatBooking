@@ -70,6 +70,42 @@ const getAnalytics = async () => {
     };
 };
 
+const getAllEmployees = async () => {
+    return await userRepository.getAllUsers();
+};
+
+const updateEmployee = async (id, name, email, role, batchId, adminId) => {
+    const updatedUser = await userRepository.updateUser(id, name, email, role, batchId);
+
+    if (!updatedUser) {
+        throw new CustomError('User not found', 404);
+    }
+
+    const db = require('../config/db');
+    await db.query(
+        'INSERT INTO audit_logs (user_id, action, entity, details) VALUES ($1, $2, $3, $4)',
+        [adminId, 'UPDATE_USER', 'USERS', JSON.stringify({ updated_user_id: id, role })]
+    );
+
+    return updatedUser;
+};
+
+const deleteEmployee = async (id, adminId) => {
+    const deletedUser = await userRepository.deleteUser(id);
+
+    if (!deletedUser) {
+        throw new CustomError('User not found', 404);
+    }
+
+    const db = require('../config/db');
+    await db.query(
+        'INSERT INTO audit_logs (user_id, action, entity, details) VALUES ($1, $2, $3, $4)',
+        [adminId, 'DELETE_USER', 'USERS', JSON.stringify({ deleted_user_id: id })]
+    );
+
+    return true;
+};
+
 module.exports = {
     createEmployee,
     updateConfig,
@@ -78,5 +114,8 @@ module.exports = {
     getHolidays: adminRepository.getHolidays,
     getAllBookings: adminRepository.getAllBookings,
     getWaitlist: adminRepository.getWaitlist,
-    getAuditLogs: adminRepository.getAuditLogs
+    getAuditLogs: adminRepository.getAuditLogs,
+    getAllEmployees,
+    updateEmployee,
+    deleteEmployee
 };

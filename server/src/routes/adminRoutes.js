@@ -3,6 +3,9 @@ const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 const {
     createEmployee,
+    getAllEmployees,
+    updateEmployee,
+    deleteEmployee,
     updateConfig,
     addHoliday,
     getHolidays,
@@ -18,7 +21,11 @@ const router = express.Router();
 router.use(protect);
 router.use(authorize('ADMIN'));
 
+router.get('/users', getAllEmployees);
 router.post('/users', createEmployee);
+router.put('/users/:id', updateEmployee);
+router.delete('/users/:id', deleteEmployee);
+
 router.put('/config', updateConfig);
 router.post('/holidays', addHoliday);
 router.get('/holidays', getHolidays);

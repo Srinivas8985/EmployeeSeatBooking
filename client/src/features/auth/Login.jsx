@@ -40,7 +40,7 @@ export default function Login() {
           <label className="block text-sm font-medium text-slate-700 mb-1">Email address</label>
           <Input 
             type="email" 
-            placeholder="john@company.com" 
+            placeholder="Enter your email" 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
@@ -64,9 +64,7 @@ export default function Login() {
           Sign in
         </Button>
       </form>
-
-      {/* Helper text for the demo/interview */}
-      <div className="mt-6 border-t border-slate-200 pt-6">
+      {/* <div className="mt-6 border-t border-slate-200 pt-6">
         <p className="text-xs text-center text-slate-500 mb-2 font-medium uppercase tracking-wider">Demo Accounts</p>
         <div className="flex justify-between text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
           <div>
@@ -79,8 +77,8 @@ export default function Login() {
             john@company.com
             <br/> password123
           </div>
-        </div>
-      </div>
+        </div> 
+      </div> */}
     </div>
   );
 }

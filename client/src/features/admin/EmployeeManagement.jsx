@@ -20,22 +20,9 @@ export default function EmployeeManagement() {
 
     const fetchEmployees = async () => {
         try {
-            // Temporary mock fetch if no endpoint exists, or real endpoint call
-            // You should have an endpoint like GET /admin/employees
-            // For now, let's mock the data visually or call the endpoint
-            // const response = await api.get('/admin/employees');
-            // setEmployees(response.data.data);
-
-            // Mocking employees for UI demonstration
-            setTimeout(() => {
-                setEmployees([
-                    { id: 1, name: 'Admin User', email: 'admin@company.com', role: 'ADMIN', batch_id: null },
-                    { id: 2, name: 'John Doe', email: 'john@company.com', role: 'EMPLOYEE', batch_id: 1, batch_name: 'Mon-Wed' },
-                    { id: 3, name: 'Jane Smith', email: 'jane@company.com', role: 'EMPLOYEE', batch_id: 2, batch_name: 'Thu-Fri' },
-                ]);
-                setLoading(false);
-            }, 500);
-
+            const response = await api.get('/admin/users');
+            setEmployees(response.data.data);
+            setLoading(false);
         } catch (error) {
             addToast({
                 title: 'Error loading employees',
@@ -49,20 +36,38 @@ export default function EmployeeManagement() {
     const handleAddEmployee = async (e) => {
         e.preventDefault();
         try {
-            // Real API call would go here
-            // await api.post('/admin/employees', newEmployee);
+            await api.post('/admin/users', newEmployee);
             addToast({
                 title: 'Employee Added',
                 description: `${newEmployee.name} has been added to the system.`,
                 variant: 'success'
             });
-            // Mock adding to local state
-            setEmployees(prev => [...prev, { ...newEmployee, id: Date.now(), batch_name: newEmployee.batch_id === 1 ? 'Mon-Wed' : 'Thu-Fri' }]);
+            fetchEmployees();
             setIsAdding(false);
             setNewEmployee({ name: '', email: '', password: '', role: 'EMPLOYEE', batch_id: 1 });
         } catch (error) {
             addToast({
                 title: 'Failed to add employee',
+                description: error.response?.data?.error || 'An error occurred',
+                variant: 'error'
+            });
+        }
+    };
+
+    const handleDeleteEmployee = async (id, name) => {
+        if (!window.confirm(`Are you sure you want to completely remove ${name} from the system?`)) return;
+
+        try {
+            await api.delete(`/admin/users/${id}`);
+            addToast({
+                title: 'Employee Removed',
+                description: `${name} has been successfully deleted.`,
+                variant: 'success'
+            });
+            setEmployees(prev => prev.filter(emp => emp.id !== id));
+        } catch (error) {
+            addToast({
+                title: 'Failed to delete',
                 description: error.response?.data?.error || 'An error occurred',
                 variant: 'error'
             });
@@ -181,9 +186,14 @@ export default function EmployeeManagement() {
                                         )}
                                     </td>
                                     <td className="px-6 py-4 text-right text-sm font-medium">
-                                        <button className="text-indigo-600 hover:text-indigo-900 mx-2">Edit</button>
+                                        <button className="text-indigo-600 hover:text-indigo-900 mx-2 hidden">Edit</button>
                                         {emp.role !== 'ADMIN' && (
-                                            <button className="text-rose-600 hover:text-rose-900">Remove</button>
+                                            <button
+                                                onClick={() => handleDeleteEmployee(emp.id, emp.name)}
+                                                className="text-rose-600 hover:text-rose-900 font-bold"
+                                            >
+                                                Remove
+                                            </button>
                                         )}
                                     </td>
                                 </tr>

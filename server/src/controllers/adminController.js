@@ -11,6 +11,40 @@ const createEmployee = async (req, res, next) => {
     }
 };
 
+const getAllEmployees = async (req, res, next) => {
+    try {
+        const employees = await adminService.getAllEmployees();
+        res.status(200).json({ success: true, data: employees });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const updateEmployee = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { name, email, role, batch_id } = req.body;
+        const adminId = req.user.id;
+
+        const updatedUser = await adminService.updateEmployee(id, name, email, role, batch_id, adminId);
+        res.status(200).json({ success: true, data: updatedUser });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const deleteEmployee = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const adminId = req.user.id;
+
+        await adminService.deleteEmployee(id, adminId);
+        res.status(200).json({ success: true, message: 'Employee deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const updateConfig = async (req, res, next) => {
     try {
         const { key, value } = req.body;
@@ -87,5 +121,8 @@ module.exports = {
     getAnalytics,
     getAllBookings,
     getWaitlist,
-    getAuditLogs
+    getAuditLogs,
+    getAllEmployees,
+    updateEmployee,
+    deleteEmployee
 };
